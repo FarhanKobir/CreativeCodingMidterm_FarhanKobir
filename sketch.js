@@ -99,8 +99,8 @@ let circleSize = 200;
 let sceneState5 = false;
 let sides = 24;
 let sceneState6 = false;
-let lastX;
-let lastY;
+let lastX = 100;
+let lastY = 100;
 
 
 function setup() {
