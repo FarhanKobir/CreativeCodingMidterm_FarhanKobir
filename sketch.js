@@ -1,16 +1,15 @@
-// adjective - desolate (of a person, NOT of a place) - feel very sad, alone, and without hope (Collins Dictionary)
+// Author: Farhan Kobir
+// Midterm Project
 
-// scene 1 - ball bouncing in pastel color pallete (very nice)
+// outcast - rejected or cast out by society (Merriam-Webster Dictionary)
+
+// scene 1 - ball bouncing in pastel color pallete with friends(very nice)
 // scene 2 - flashing red and blue (like police came)
-// scene 3 - the ball attached to the mouse, behind black bars and one massive pair of eyes in the middle following mouse
-// scene 4 (maybe) - random generate of canvas full of small eyes, mouse has ball attached to it, but as you go, it overlays white stroke (kinda like everyone is avoiding ball)
-// scene 5 - same as scene 1, but colors are different shades of gray, maybe even make ball become faster and angular (start off with 21 sides, each bounce removes 3 sides until becomes triangle)
+// scene 3 - the ball attached to the mouse, behind black bars and can't escape and one massive pair of eyes in the middle following mouse
+// scene 4 -  canvas full of small eyes, mouse has ball attached to it,everyone looking away from ball
+// scene 5 - similar to scene 1 but slower, background is constantly gray, ball becomes angular (start off with 21 sides, each bounce removes 3 sides until becomes triangle)
+// scene 6 - the void engulfs the screen
 // - END -
-
-// note : first make it the way i want, then find ways to make things into objects with methods and incorporate arrays (required)
-// make general structure with low detail first, then make it better and more detailed
-
-// notes for further development: do smth with scene 2 so it's not just flashing between the two, scene 3 make bars move to the right continuously
 
 class Eye {
   constructor(x, y, eyeRadius, pupilRadius) {
@@ -24,10 +23,24 @@ class Eye {
     fill(255);
     ellipse(this.x, this.y, this.eyeRadius * 2);
     
-    let dx = mouseX - this.x;
-    let dy = mouseY - this.y;
-    let distance = sqrt(dx * dx + dy * dy);
-    let pupilX = this.x + (dx / distance) * (this.eyeRadius - this.pupilRadius);
+    let dx;
+    let dy;
+    if (sceneState4) {
+      // for scene 4 to make the pupil look opposite
+      dx = this.x - mouseX;
+      dy = this.y - mouseY;
+    } else if(sceneState3) {
+      // for scene 3 to look at circle instead of cursor
+      dx = lastX - this.x;
+      dy = lastY - this.y;
+    }
+    else {
+      // pupil looks toward the mouse
+      dx = mouseX - this.x;
+      dy = mouseY - this.y;
+    }
+    let distance = sqrt(dx * dx + dy * dy); // pythogrean theorem
+    let pupilX = this.x + (dx / distance) * (this.eyeRadius - this.pupilRadius); // keeps pupil within the eye
     let pupilY = this.y + (dy / distance) * (this.eyeRadius - this.pupilRadius);
     
     fill(0);
@@ -52,6 +65,14 @@ let position1;
 let velocity1;
 let position2;
 let velocity2;
+let redPos;
+let redVel;
+let greenPos;
+let greenVel;
+let bluePos;
+let blueVel;
+let orgPos;
+let orgVel;
 let bounceCount = 0;
 let bgColor;
 let flashing = false;
@@ -78,24 +99,39 @@ let circleSize = 200;
 let sceneState5 = false;
 let sides = 24;
 let sceneState6 = false;
+let lastX;
+let lastY;
 
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   bgColor = getPastel();
 
-  // for ball
+  // scene 1 balls
   position1 = createVector(100, 100);
   velocity1 = createVector(7, 7);
 
+  redPos = createVector(500, 100);
+  redVel = createVector(3, 5);
+
+  orgPos = createVector(300, 100);
+  orgVel = createVector(5, 3);
+
+  greenPos = createVector(800, 100);
+  greenVel = createVector(5, 5);
+
+  bluePos = createVector(100, 500);
+  blueVel = createVector(3, 5);
+
+  // scene 5 balls
   position2 = createVector(100, 100);
   velocity2 = createVector(3, 3);
 
   // eye location
-  eyeX1 = (windowWidth / 2) - 150;
-  eyeY1 = windowHeight / 3;
-  eyeX2 = (windowWidth / 2) + 150;
-  eyeY2 = windowHeight / 3;
+  eyeX1 = 5* (windowWidth / 7) - 150;
+  eyeY1 = windowHeight / 2;
+  eyeX2 = 5 * (windowWidth / 7) + 150;
+  eyeY2 = windowHeight / 2;
 
   face.push(new Pair(new Eye(eyeX1, eyeY1, 150, 60), new Eye(eyeX2, eyeY2, 150, 60)));
 
@@ -152,6 +188,11 @@ function draw() {
       changeBackground();
     }
     
+    bounce(redPos, redVel, 255, 0, 0);
+    bounce(greenPos, greenVel, 0, 255, 0);
+    bounce(bluePos, blueVel, 0, 0, 255);
+    bounce(orgPos, orgVel, 255, 69, 0);
+
     stroke(0);
     strokeWeight(3);
     fill(r, g, b);
@@ -160,19 +201,28 @@ function draw() {
   
   // scene 3
   if (sceneState3){
-    strokeWeight(3);
-    fill(r, g, b);
-    circle(mouseX, mouseY, circleSize);
-    
-    // prison bars
-    for (let i = 0; i < windowWidth + 10; i+= 100){
-        strokeWeight(40);
-        line(i, -10, i, windowHeight + 10);
-    }
-
+    gradient();
+    stroke(0);
     // eye
     strokeWeight(3);
     face[0].display();
+
+    strokeWeight(3);
+    fill(r, g, b);
+    if (mouseX + circleSize < windowWidth/2){
+      circle(mouseX, mouseY, circleSize);
+      lastX = mouseX;
+      lastY = mouseY;
+    }
+    else{ // prevents circle from leaving prison
+      circle(lastX, lastY, circleSize);
+    }
+
+    // prison bars only half of window
+    for (let i = 0; i < (windowWidth/2) + 10; i+= 100){
+        strokeWeight(30);
+        line(i, -10, i, windowHeight + 10);
+    }
 
     // make circle towards balck
     r -= .25;
@@ -182,13 +232,15 @@ function draw() {
     if (r <= 0) {
       sceneState4 = true;
       sceneState3 = false;
-      bgColor = color(200);
+      //bgColor = color(200);
+      gradient();
+      stroke(0);
     }
   }
   
   // scene 4
   if (sceneState4) {
-    background(bgColor);
+    //background(bgColor);
     strokeWeight(3);
     fill(r, g, b);
     circle(mouseX, mouseY, circleSize);
@@ -202,13 +254,15 @@ function draw() {
     } else {
       sceneState4 = false;
       sceneState5 = true;
-      bgColor = color(255);
+      //bgColor = color(255);
+      gradient();
+      stroke(0);
     }
   }
 
   // scene 5
   if (sceneState5) {
-    background(bgColor);
+    //background(bgColor);
     // control ball speed
     position2.add(velocity2);
     // check if bounce
@@ -227,6 +281,7 @@ function draw() {
         circleSize -= 10;
       }
     }
+
     stroke(0);
     strokeWeight(3);
     fill(r, g, b);
@@ -238,10 +293,13 @@ function draw() {
   }
 
   if (sceneState6){
-    background(255);
+    //background(255);
+    gradient();
+    stroke(0);
     drawPolygon(position2.x, position2.y, circleSize, sides);
     circleSize += 3;
   }
+  
 
 }
 
@@ -271,19 +329,32 @@ function drawPolygon(x, y, radius, side) {
   endShape(CLOSE);
 }
 
+function bounce(pos, vel, red, green, blue){
+  // control ball speed
+  pos.add(vel);
+  // check if bounce
+  if (pos.x > width || pos.x < 0) {
+    vel.x *= -1;
+  }
+  if (pos.y > height || pos.y < 0) {
+    vel.y *= -1;
+  }
+  
+  stroke(0);
+  strokeWeight(3);
+  fill(red, green, blue);
+  circle(pos.x, pos.y, 100);
+}
 
-// *taken from chatgpt* TEMPORARY TO TEST IDEA (also make sure you understand what is happening here)
-// can make this into an object
-// function drawEye(x, y) {
-//   fill(255);
-//   ellipse(x, y, eyeRadius * 2);
-  
-//   let dx = mouseX - x;
-//   let dy = mouseY - y;
-//   let distance = sqrt(dx * dx + dy * dy); // pythagreon theorem
-//   let pupilX = x + (dx / distance) * (eyeRadius - pupilRadius); // makes sure the pupil stays within the eyes
-//   let pupilY = y + (dy / distance) * (eyeRadius - pupilRadius);
-  
-//   fill(0);
-//   ellipse(pupilX, pupilY, pupilRadius * 2);
-// }
+function gradient(){
+  for (let x = 0; x < width; x++) {
+    let z;
+    if (x < width / 2) {
+      z = map(x, 0, width / 2, 80, 200);
+    } else {
+      z = map(x, width / 2, width, 200, 80);
+    }
+    stroke(z);
+    line(x, 0, x, height);
+  }
+}
