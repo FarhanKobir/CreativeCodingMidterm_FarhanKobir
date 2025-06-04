@@ -1,1 +1,1 @@
-# CreativeCodingMidterm_FarhanKobir
+# Abstract Representation of the Word 
