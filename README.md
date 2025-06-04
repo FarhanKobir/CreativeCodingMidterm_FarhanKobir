@@ -1,1 +1,1 @@
-# Abstract Representation of the Word 
+# Abstract Representation of the Word "Outcast"
